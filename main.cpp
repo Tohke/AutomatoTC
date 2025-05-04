@@ -52,42 +52,6 @@ string classificarAutomato(const vector<Regra>& regras) {
     return "AFD";
 }
 
-bool simularAFD(const string& entrada, int atual, const vector<int>& finais, const vector<Regra>& regras) {
-    for (char c : entrada) {
-        string s(1, c);
-        bool encontrou = false;
-        for (const Regra& r : regras) {
-            if (r.origem == atual && r.simbolo == s) {
-                atual = r.destino;
-                encontrou = true;
-                break;
-            }
-        }
-        if (!encontrou) return false;
-    }
-    return find(finais.begin(), finais.end(), atual) != finais.end();
-}
-
-bool simularAFND(const string& entrada, int inicial, const vector<int>& finais, const vector<Regra>& regras) {
-    set<int> ativos = {inicial};
-    for (char c : entrada) {
-        string s(1, c);
-        set<int> proximos;
-        for (int estado : ativos) {
-            for (const Regra& r : regras) {
-                if (r.origem == estado && r.simbolo == s) {
-                    proximos.insert(r.destino);
-                }
-            }
-        }
-        if (proximos.empty()) return false;
-        ativos = proximos;
-    }
-    for (int estado : ativos) {
-        if (find(finais.begin(), finais.end(), estado) != finais.end()) return true;
-    }
-    return false;
-}
 
 set<int> fechoEpsilon(int estado, const vector<Regra>& regras) {
     set<int> fecho = {estado};
@@ -105,6 +69,22 @@ set<int> fechoEpsilon(int estado, const vector<Regra>& regras) {
     return fecho;
 }
 
+bool simularAFD(const string& entrada, int atual, const vector<int>& finais, const vector<Regra>& regras) {
+    for (char c : entrada) {
+        string s(1, c);
+        bool encontrou = false;
+        for (const Regra& r : regras) {
+            if (r.origem == atual && r.simbolo == s) {
+                atual = r.destino;
+                encontrou = true;
+                break;
+            }
+        }
+        if (!encontrou) return false;
+    }
+    return find(finais.begin(), finais.end(), atual) != finais.end();
+}
+
 bool simularAFND_E(const string& entrada, int inicial, const vector<int>& finais, const vector<Regra>& regras) {
     set<int> ativos = fechoEpsilon(inicial, regras);
     for (char c : entrada) {
@@ -115,6 +95,27 @@ bool simularAFND_E(const string& entrada, int inicial, const vector<int>& finais
                 if (r.origem == estado && r.simbolo == s) {
                     set<int> fechoDestino = fechoEpsilon(r.destino, regras);
                     proximos.insert(fechoDestino.begin(), fechoDestino.end());
+                }
+            }
+        }
+        if (proximos.empty()) return false;
+        ativos = proximos;
+    }
+    for (int estado : ativos) {
+        if (find(finais.begin(), finais.end(), estado) != finais.end()) return true;
+    }
+    return false;
+}
+
+bool simularAFND(const string& entrada, int inicial, const vector<int>& finais, const vector<Regra>& regras) {
+    set<int> ativos = {inicial};
+    for (char c : entrada) {
+        string s(1, c);
+        set<int> proximos;
+        for (int estado : ativos) {
+            for (const Regra& r : regras) {
+                if (r.origem == estado && r.simbolo == s) {
+                    proximos.insert(r.destino);
                 }
             }
         }
